@@ -9,11 +9,11 @@ User.create([
     {name: "user5", duration: 3, cardio?: false}
 ])
 Exercise.create([
-    {name: "Exercise 1"},
-    {name: "Exercise 2"},
-    {name: "Exercise 3"},
-    {name: "Exercise 4"},
-    {name: "Exercise 5"}
+    {name: "Exercise 1", duration: 3},
+    {name: "Exercise 2", duration: 2},
+    {name: "Exercise 3", duration: 10},
+    {name: "Exercise 4", duration: 5},
+    {name: "Exercise 5", duration: 1}
 ])
 
 Routine.create([
