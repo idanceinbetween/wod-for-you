@@ -20,7 +20,7 @@ class CLI
     set_up_user_and_greet
     main_menu
     # confirm_duration
-    # make_custom_exercise
+    # create_custom_exercise
     # view_my_custom_exercises
   end
 
@@ -57,7 +57,9 @@ class CLI
       when 1
         workout_now_menu
       when 2
-        custom_exercises_menu
+        browse_exercises_menu
+      when 4
+        delete_account
     end
 
   end
@@ -171,28 +173,35 @@ class CLI
     # #stretch goals: display total mins of selected exercises
   end
 
-  def custom_exercises_menu
+  def browse_exercises_menu
     answer = @prompt.select("Here are some things you could do now:") do |menu|
       menu.enum '.'
-      menu.choice "View all custom exercises that you shared (you're the best!)", 1
-      menu.choice "Make a custom exercise", 2
-      menu.choice "Create your own WOD", 3
+      menu.choice "View the entire exercise database", 1
+      menu.choice "View all custom exercises that you shared (you're the best!)", 2
+      menu.choice "Create your exercise!", 3
       menu.choice "Back to main menu", 4
     end
 
     case answer.to_i
     when 1
-      last_wod
+      view_all_exercises
     when 2
-      new_wod
+      view_my_custom_exercises
     when 3
-      create_wod
+      create_custom_exercise
     when 4
       main_menu
     end
   end
 
-  def make_custom_exercise
+  def view_all_exercises
+    Exercise.all.each_with_index do |o,i|
+      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+    end
+    browse_exercises_menu
+  end
+
+  def create_custom_exercise
     puts "Have a signature move? Share it with other users!"
     e_name = @prompt.ask("What is your exercise name called?") do |q|
       q.required true
@@ -208,16 +217,58 @@ class CLI
     end
     Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
     puts "Congratulations, #{e_name} is now on our exercise database!"
+    browse_exercises_menu
+  end
+
+  def my_custom_exercises
+    @my_exercises = Exercise.where(user_id: @user.id)
   end
 
   def view_my_custom_exercises
-    puts "Here are the custom exercises you created. Thank you for the love <3: \n"
-    Exercise.where(user_id: @user.id).each_with_index do |o,i|
-      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+    if my_custom_exercises.length < 0
+      puts "You haven't created any custom exercises yet. Perhaps you would like to create one now?"
+    else
+      puts "Here are the custom exercises you created. Thank you for the love <3: \n"
+      @my_exercises.each_with_index do |o,i|
+        puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+      end
+    end
+    browse_exercises_menu
+  end
+
+  def select_my_custom_exercise
+    hash = Hash.new
+    my_custom_exercise.all.each do |o|
+      key = "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"
+      hash[key] = o.id
     end
   end
 
-  def delete_wod
+  def update_my_custom_exercise
+
+  end
+
+  def delete_my_custom_exercise
+
+  end
+
+  def delete_all_my_custom_exercises
+    Exercise.where(user_id: @user.id).destroy_all
+  end
+
+  def delete_account
+    @prompt.say("Oh no, what did we do? Why are you leaving us????")
+    # binding.pry
+    answer = @prompt.yes?("Are you sure you want to delete your account? It will also delete all custom exercises that you created.")
+    if answer
+      delete_all_my_custom_exercises
+      Routine.where(user_id: @user.id).destroy_all
+      User.where(id: @user.id).destroy_all
+      puts "Sad to see you go. Hope you have a good life."
+    else
+      puts "YES. That's the right thing to do. Off you go - back to the main menu."
+      main_menu
+    end
   end
 
   def closest_gyms #Stretch goal
