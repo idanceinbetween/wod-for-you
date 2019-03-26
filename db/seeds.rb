@@ -1,19 +1,19 @@
-# User.destroy_all
-# Exercise.destroy_all
+User.destroy_all
+Exercise.destroy_all
 
 User.create([
-    {name: "user1", duration: 30, cardio?: true},
-    {name: "user2", duration: 15, cardio?: true},
-    {name: "user3", duration: 10, cardio?: true},
-    {name: "user4", duration: 5, cardio?: false},
-    {name: "user5", duration: 3, cardio?: false}
+    {name: "user1", duration: 30},
+    {name: "user2", duration: 15},
+    {name: "user3", duration: 10},
+    {name: "user4", duration: 5},
+    {name: "user5", duration: 3}
 ])
 Exercise.create([
-    {name: "Exercise 1", duration: 3},
-    {name: "Exercise 2", duration: 2},
-    {name: "Exercise 3", duration: 10},
-    {name: "Exercise 4", duration: 5},
-    {name: "Exercise 5", duration: 1}
+    {name: "Exercise 1", description: "E Description 1", length: 3},
+    {name: "Exercise 2", description: "E Description 2", length: 2},
+    {name: "Exercise 3", description: "E Description 3", length: 10},
+    {name: "Exercise 4", description: "E Description 4", length: 5},
+    {name: "Exercise 5", description: "E Description 5", length: 1}
 ])
 
 Routine.create([

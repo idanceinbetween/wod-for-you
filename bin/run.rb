@@ -1,7 +1,4 @@
-require_relative '../lib/cli'
+require_relative '../app/cli'
 
 cli = CLI.new
-
-cli.greet
-cli.get_name
-cli.warmup
+cli.start
