@@ -18,6 +18,24 @@ class CLI
     end
   end
 
+  def main_menu
+    @prompt.select("What would you like to do today?") do |menu|
+      menu.enum '.'
+      menu.choice "Add Custom Exercise", "make_custom_exercise"
+      menu.choice "View your last WOD", "confirm_duration"
+      menu.choice "Workout now!", "confirm_duration"
+    end
+  end
+
+  def start
+    greet
+    get_name
+    main_menu
+    # confirm_duration
+    # make_custom_exercise
+    # view_my_custom_exercises
+  end
+
   def confirm_duration
     if User.find_by(name: @name)
       @user = User.find_by(name: @name)
@@ -25,7 +43,7 @@ class CLI
       puts "Welcome back #{@name}. Your last WOD was #{@duration} mins."
       answer1 = @prompt.yes?("Would you like to change the duration today?")#programme better if not y/n
       if answer1 == true
-        Routine.where(user_id: @user.id).destroy_all
+        destroy_my_routine
         @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DONT BE LAZY!)")
         puts "Thanks, let me run a get_random_wod for you right now, hang on."
         get_random_wod
@@ -36,7 +54,7 @@ class CLI
         end
         answer2 = @prompt.yes?("Would you like a new random WOD?")
         if answer2 == true
-          Routine.where(user_id: @user.id).destroy_all
+          destroy_my_routine
           self.get_random_wod
         else
           puts "I will run self.run_wod"
@@ -69,20 +87,50 @@ class CLI
     answer3 == "Proceed" ? (puts "I will run_wod") : select_wod
   end
 
-  def start
-    greet
-    get_name
-    confirm_duration
+  def destroy_my_routine
+    Routine.where(user_id: @user.id).destroy_all
   end
 
   def select_wod
-    choice_key = Exercise.all.map {|o| "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"}
-    @my_wod = @prompt.multi_select("Please pick your exercises.", choice_key)
-    puts "#{@my_wod}"
-    #stretch goals: display total mins of selected exercises
+    destroy_my_routine
+    hash = Hash.new
+    Exercise.all.each do |o|
+      key = "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"
+      hash[key] = o.id
+    end
+    @my_wod = @prompt.multi_select("Please pick your exercises.", hash) #array of exercise.id
+    @my_wod.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
+    puts "Your WOD is the following:"
+    User.find_by(name: @name).exercises.each_with_index do |o,i|
+      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+    end
+    puts "LET'S GO!!!!!!!"
+    # #stretch goals: display total mins of selected exercises
   end
 
-  def update_wod
+  def make_custom_exercise
+    puts "Have a signature move? Share it with other users!"
+    e_name = @prompt.ask("What is your exercise name called?") do |q|
+      q.required true
+      # q.validate /\A\w+\Z/
+    end
+    e_description = @prompt.ask("Please enter a short description of #{e_name}:") do |q|
+      q.required true
+      # q.validate /\A\w+\Z/
+    end
+    e_duration = @prompt.ask("How many minutes will it take to complete this exercise?") do |q|
+      q.required true
+      # q.validate /^\d+$/
+    end
+    Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
+    puts "Congratulations, #{e_name} is now on our exercise database!"
+  end
+
+  def view_my_custom_exercises
+    puts "Here are the custom exercises you created. Thank you for the love <3: \n"
+    Exercise.where(user_id: @user.id).each_with_index do |o,i|
+      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+    end
   end
 
   def delete_wod
