@@ -27,8 +27,8 @@ class CLI
       if answer1 == true
         Routine.where(user_id: @user.id).destroy_all
         @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DONT BE LAZY!)")
-        puts "Thanks, let me run a give_random_wod for you right now, hang on."
-        give_random_wod
+        puts "Thanks, let me run a get_random_wod for you right now, hang on."
+        get_random_wod
       else
         puts "Here is your WOD from the previous visit:"
         User.find_by(name: @name).exercises.each_with_index do |o,i|
@@ -37,7 +37,7 @@ class CLI
         answer2 = @prompt.yes?("Would you like a new random WOD?")
         if answer2 == true
           Routine.where(user_id: @user.id).destroy_all
-          self.give_random_wod
+          self.get_random_wod
         else
           puts "I will run self.run_wod"
         end
@@ -46,11 +46,11 @@ class CLI
       @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DONT BE LAZY!)")
       @user = User.create(name: @name, duration: @duration)
       puts "It's your first visit to WOD Gym, #{@name}, welcome!"
-      give_random_wod
+      get_random_wod
     end
   end
 
-  def give_random_wod
+  def get_random_wod
     #when we run this, we have a user-defined duration stored in @duration.
     puts "Here is a random WOD of #{@duration} mins: \n"
     current_duration = 0
@@ -58,16 +58,15 @@ class CLI
       selected = Exercise.all.sample
       if (current_duration += selected.duration) <= @duration.to_i
         Routine.create(user_id: @user.id, exercise_id: selected.id)
-        selected=""
       else
         current_duration -= selected.duration
-        selected = ""
       end
     end
-    puts "puts WOD here in #{current_duration} mins."
     User.find_by(name: @name).exercises.each_with_index do |o,i|
       puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
     end
+    answer3 = @prompt.select("Would you like to proceed with this WOD or create your own WOD instead?", %w(Proceed Create))
+    answer3 == "Proceed" ? (puts "I will run_wod") : select_wod
   end
 
   def start
@@ -76,8 +75,11 @@ class CLI
     confirm_duration
   end
 
-  def user_select_wod
-    
+  def select_wod
+    choice_key = Exercise.all.map {|o| "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"}
+    @my_wod = @prompt.multi_select("Please pick your exercises.", choice_key)
+    puts "#{@my_wod}"
+    #stretch goals: display total mins of selected exercises
   end
 
   def update_wod
