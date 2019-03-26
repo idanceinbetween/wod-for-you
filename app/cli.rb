@@ -58,8 +58,12 @@ class CLI
         workout_now_menu
       when 2
         browse_exercises_menu
+      when 3
+        closest_gyms
       when 4
         delete_account
+      when 5
+        exit
     end
 
   end
@@ -74,26 +78,25 @@ class CLI
     end
 
     case answer.to_i
-    when 1
-      last_wod
-    when 2
-      new_wod
-    when 3
-      create_wod
-    when 4
-      main_menu
+      when 1
+        if @duration == 0
+          @prompt.error("Looks like you don't have a previous WOD yet. Please select Get new WOD or Create your own WOD from the menu.")
+        else
+          last_wod
+        end
+      when 2
+        new_wod
+      when 3
+        create_wod
+      when 4
+        main_menu
     end
   end
 
   def last_wod
-    if @duration == 0
-      @prompt.error("Looks like you don't have a previous WOD yet. Please select Get new WOD or Create your own WOD from the menu.")
-      workout_now_menu
-    else
       @prompt.say("Here is your WOD (#{@duration} mins) from the previous visit:")
       display_wod
       workout_now_menu
-    end
   end
 
   def display_wod
@@ -139,17 +142,18 @@ class CLI
   end
 
   def new_or_create_wod
-    answer3 = @prompt.select("Would you like to proceed with this WOD or create your own WOD instead?", %w(Proceed Create))
-    answer3 == "Proceed" ? confirm_wod_and_go : create_wod
+    answer = @prompt.select("Would you like to proceed with this WOD or create your own WOD instead?", %w(Proceed Create))
+    answer == "Proceed" ? confirm_wod_and_go : create_wod
   end
 
   def confirm_wod_and_go
     answer = @prompt.yes?("ARE YOU READY????")
     if answer
       puts "do run_wod"
+      main_menu
     else
       puts "fine, let's go back to the menu and you make up your mind what you want to do!"
-      workout_now_menu
+      main_menu
     end
   end
 
@@ -177,20 +181,33 @@ class CLI
     answer = @prompt.select("Here are some things you could do now:") do |menu|
       menu.enum '.'
       menu.choice "View the entire exercise database", 1
-      menu.choice "View all custom exercises that you shared (you're the best!)", 2
-      menu.choice "Create your exercise!", 3
-      menu.choice "Back to main menu", 4
+      menu.choice "Create your custom exercise!", 2
+      menu.choice "View all custom exercises that you shared (you're the best!)", 3
+      menu.choice "Edit/Delete your custom exercise!", 4
+      menu.choice "Back to main menu", 5
     end
 
     case answer.to_i
-    when 1
-      view_all_exercises
-    when 2
-      view_my_custom_exercises
-    when 3
-      create_custom_exercise
-    when 4
-      main_menu
+      when 1
+        view_all_exercises
+      when 2
+        create_custom_exercise
+      when 3
+        if my_custom_exercises.length ==0
+          @prompt.error("You haven't created any custom exercises yet. Perhaps you would like to create one now?")
+          browse_exercises_menu
+        else
+          view_my_custom_exercises
+        end
+      when 4
+        if my_custom_exercises.length ==0
+          @prompt.error("You have no custom exercises to edit or delete. Please select another option.")
+          browse_exercises_menu
+        else
+          select_my_custom_exercise
+        end
+      when 5
+        main_menu
     end
   end
 
@@ -225,31 +242,57 @@ class CLI
   end
 
   def view_my_custom_exercises
-    if my_custom_exercises.length < 0
-      puts "You haven't created any custom exercises yet. Perhaps you would like to create one now?"
-    else
       puts "Here are the custom exercises you created. Thank you for the love <3: \n"
       @my_exercises.each_with_index do |o,i|
         puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
       end
-    end
     browse_exercises_menu
   end
 
   def select_my_custom_exercise
     hash = Hash.new
-    my_custom_exercise.all.each do |o|
+    my_custom_exercises.all.each do |o|
       key = "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"
       hash[key] = o.id
     end
+
+    @selected_custom_exercise_id = @prompt.select("Please select the custom exercise you want to edit/delete.", hash) #the exercise id
+    @selected_custom_exercise = Exercise.find(@selected_custom_exercise_id)
+
+    edit_or_delete_custom_exercise
   end
 
-  def update_my_custom_exercise
+  def edit_or_delete_custom_exercise
+    answer = @prompt.select("Would you like to edit or delete #{@selected_custom_exercise.name}?") do |menu|
+      menu.enum '.'
+      menu.choice "Edit", 1
+      menu.choice "Delete", 2
+    end
 
+    case answer
+      when 1
+        edit_my_custom_exercise
+        browse_exercises_menu
+      when 2
+        delete_my_custom_exercise
+        browse_exercises_menu
+    end
+  end
+
+  def edit_my_custom_exercise
+    name = @prompt.ask("Please enter the updated name:")
+    description = @prompt.ask("Please enter the updated description:")
+    duration = @prompt.ask("Please enter the updated duration:")
+    Exercise.update(@selected_custom_exercise_id, name: name, description: description, duration: duration)
+    @prompt.say("Fab! All updated as below:")
+    @prompt.say("#{@selected_custom_exercise.name}")
+    @prompt.say("#{@selected_custom_exercise.description}")
+    @prompt.say("#{@selected_custom_exercise.duration}")
   end
 
   def delete_my_custom_exercise
-
+    @selected_custom_exercise.destroy
+    browse_exercises_menu
   end
 
   def delete_all_my_custom_exercises
@@ -258,7 +301,6 @@ class CLI
 
   def delete_account
     @prompt.say("Oh no, what did we do? Why are you leaving us????")
-    # binding.pry
     answer = @prompt.yes?("Are you sure you want to delete your account? It will also delete all custom exercises that you created.")
     if answer
       delete_all_my_custom_exercises
@@ -271,7 +313,11 @@ class CLI
     end
   end
 
+  def exit
+  end
+
   def closest_gyms #Stretch goal
+    main_menu
   end
 
   def music_suggest #Stretch goal
