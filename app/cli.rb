@@ -19,12 +19,20 @@ class CLI
   end
 
   def main_menu
-    @prompt.select("What would you like to do today?") do |menu|
+    answer = @prompt.select("What would you like to do today?") do |menu|
       menu.enum '.'
-      menu.choice "Add Custom Exercise", "make_custom_exercise"
-      menu.choice "View your last WOD", "confirm_duration"
-      menu.choice "Workout now!", "confirm_duration"
+      menu.choice "Workout now!",1
+      menu.choice "Your Custom Exercises",2
+      menu.choice "Find Gym - PAY FOR THIS FEATURE MATE",3
+      menu.choice "Delete Account (Nooooooooooo...)",4
+      menu.choice "CAN'T DEAL WITH THIS ANYMOMRE. Time for cake. GOODBYE",5
     end
+
+    case answer
+      when 1
+        workout_now_menu
+    end
+
   end
 
   def start
@@ -36,11 +44,51 @@ class CLI
     # view_my_custom_exercises
   end
 
-  def confirm_duration
+  def workout_now_menu
+    answer = @prompt.select("Here are some things you could do:") do |menu|
+      menu.enum '.'
+      menu.choice "Your Last WOD", 1
+      menu.choice "New WOD", 2
+      menu.choice "Create your own WOD", 3
+      menu.choice "Back to main menu", 4
+    end
+
+    case answer.to_i
+    when 1
+      last_wod
+    when 2
+      new_wod
+    when 3
+      create_wod
+    when 4
+      main_menu
+    end
+  end
+
+  def last_wod
     if User.find_by(name: @name)
       @user = User.find_by(name: @name)
       @duration = @user.exercises.sum(:duration)
-      puts "Welcome back #{@name}. Your last WOD was #{@duration} mins."
+      @prompt.say("Your last WOD was #{@duration} mins. Here is your WOD from the previous visit:")
+      puts "n"
+      new_wod
+    else
+      @prompt.error("Looks like it's your first time here, you don't have a WOD yet. Please select Get new WOD or Create Your Own from the menu.")
+      workout_now_menu
+  end
+
+  def display_wod
+    @user = User.find_by(name: @name)
+    User.find_by(name: @name).exercises.each_with_index do |o,i|
+      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+    end
+  end
+
+  def new_wod
+    if User.find_by(name: @name)
+      @user = User.find_by(name: @name)
+      @duration = @user.exercises.sum(:duration)
+      @prompt.say("Your last WOD was #{@duration} mins.")
       answer1 = @prompt.yes?("Would you like to change the duration today?")#programme better if not y/n
       if answer1 == true
         destroy_my_routine
@@ -48,10 +96,7 @@ class CLI
         puts "Thanks, let me run a get_random_wod for you right now, hang on."
         get_random_wod
       else
-        puts "Here is your WOD from the previous visit:"
-        User.find_by(name: @name).exercises.each_with_index do |o,i|
-          puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
-        end
+        p
         answer2 = @prompt.yes?("Would you like a new random WOD?")
         if answer2 == true
           destroy_my_routine
@@ -66,7 +111,6 @@ class CLI
       puts "It's your first visit to WOD Gym, #{@name}, welcome!"
       get_random_wod
     end
-  end
 
   def get_random_wod
     #when we run this, we have a user-defined duration stored in @duration.
