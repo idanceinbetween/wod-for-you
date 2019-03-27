@@ -1,3 +1,4 @@
+# require_all '../lib/'
 require 'pry'
 require 'TTY'
 
@@ -86,6 +87,7 @@ class CLI
         exercises_menu
       when 3
         find_gym
+        back_to_main_menu
       when 4
         delete_account
       when 5
@@ -138,6 +140,7 @@ class CLI
       back_to_your_workout_menu
     else
       view_wod
+      new_or_create_wod
     end
   end
 
@@ -154,7 +157,6 @@ class CLI
      puts ""
      puts "==============================================================".center(200)
    end
-   new_or_create_wod
 end
 
   def new_wod
@@ -183,7 +185,6 @@ end
       q.in '5-30'
       q.messages[:range?] = 'Which part of between 5 and 30 did you not understand???'
     end
-    @prompt.say("Thanks, let me get a WOD for you right now.", color: :green)
     @duration = @duration.to_i
   end
 
@@ -198,6 +199,7 @@ end
       end
     end
     view_wod
+    new_or_create_wod
   end
 
   def new_or_create_wod
@@ -229,10 +231,10 @@ end
     end
     case answer
     when 1
-      @prompt.say("do run_wod")
+      run_wod
       back_to_main_menu
     when 2
-      @prompt.say("Fine, come back when you're ready!")
+      @prompt.say("Fine, come back when you're ready!", color: :green)
       back_to_exercises_menu
     end
   end
@@ -251,8 +253,9 @@ end
     end
     @my_wod = @prompt.multi_select("Please pick your exercises.", hash) #array of exercise.id
     @my_wod.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
-    @prompt.say("Your WOD is created and saved as the following:")
+    @prompt.say("<('o'<) Your WOD is created and saved as the following:")
     view_wod
+    new_or_create_wod
     confirm_wod_and_go
     # #stretch goals: display total mins of selected exercises
   end
@@ -318,15 +321,20 @@ end
   end
 
   def create_custom_exercise
-    @prompt.say("Have a signature move? Share it with other users!")
+    @prompt.say("(°∀°) Have a signature move? Share it with other users!")
     e_name = @prompt.ask("What is your exercise name called?") do |q|
       q.required true
     end
+    e_name = e_name.split.map(&:capitalize).join(" ")
+
     e_description = @prompt.ask("Please enter a short description of #{e_name}:") do |q|
       q.required true
     end
+
     e_duration = @prompt.ask("How many minutes will it take to complete this exercise?") do |q|
       q.required true
+      q.in '1-30'
+      q.messages[:range?] = "Coders ain't got any time, keep it within 30 mins!"
     end
     Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
     @prompt.say("ヽ(^◇^*)/ Excellent, #{e_name} is now on our exercise database!")
@@ -385,6 +393,7 @@ end
 
   def edit_my_custom_exercise
     name = @prompt.ask("Please enter the updated name: (Currently: #{@selected_custom_exercise.name})")
+    name = name.split.map(&:capitalize).join(" ")
     description = @prompt.ask("Please enter the updated description: (Currently: #{@selected_custom_exercise.description})")
     duration = @prompt.ask("Please enter the updated duration: (Currently: #{@selected_custom_exercise.duration})")
     Exercise.update(@selected_custom_exercise_id, name: name, description: description, duration: duration)
@@ -397,13 +406,11 @@ end
   def delete_my_custom_exercise
     @selected_custom_exercise.destroy
     @prompt.say("The exercise has been deleted from the database.")
-    back_to_exercises_menu
   end
 
   def delete_all_my_custom_exercises
     Exercise.where(user_id: @user.id).destroy_all
     @prompt.say("All your custom exercises have been deleted from the database.")
-    back_to_exercises_menu
   end
 
   def delete_account
@@ -417,16 +424,16 @@ end
     case answer
     when 1
       delete_all_my_custom_exercises
-      @prompt.say("All your custom exercises are deleted.")
+      @prompt.say("ヾ｜￣ー￣｜ﾉ All your custom exercises are deleted.")
       back_to_main_menu
     when 2
       delete_all_my_custom_exercises
       Routine.where(user_id: @user.id).destroy_all
       User.where(id: @user.id).destroy_all
-      @prompt.say("Sad to see you go but hope you have a good life.")
+      @prompt.say("~,~ Sad to see you go but hope you have a good life.")
       exit
     when 3
-      @prompt.say("Glad you chose to stay! Sending you back to Main Menu...")
+      @prompt.say("(¬‿¬) Glad you chose to stay! Sending you back to Main Menu...")
       back_to_main_menu
     end
   end
@@ -443,13 +450,85 @@ end
   def find_gym
     @postcode = @prompt.ask("What is your postcode?")
     Launchy.open("www.google.com/maps/search/?api=1&query=gyms+near #{@postcode}")
-    back_to_main_menu
   end
 
-  def music_suggest #Stretch goal
-  end
+  def run_wod
+    reset
+    puts <<-'EOF'
+                                                 _                                   _
+                                               _| |                                 | |_
+                                              | | |______OOOOo__________oOOOO_______| | |
+                                             [| | |--------(`,----------\`,---------| | |]
+                                              |_| |      )  (            )  (       | |_|
+                                                |_|      /  |            |  \       |_|
+                                                         |  |  \\\\\\//  |  |
+                                                         \  /  | -  - |  \  /
+                                                         /  \ (  a  a  ) /  \
+                                                         |   | |  L   | |   |
+                                                         |   | \  ==  / |   |
+                                                         |   /_.\____/._\   |
+                                                          \   ||      ||   /
+                                                           \  | '-..-' |  /
+                                                           |  ; GOLD'S ;  |
+                                                           | /          \ |
+                                                            \            /
+                                                             |          |
+                                                             |    __    |
+                                                             |===[LI]===|
+                                                             )"""`""`"""(
+                                                            /            \
+                                                           /    ,____,    \
+                                                          /'-. _.'  '._ .-'\
+                                                         /     /      \     \
+                                                         |    /        \    |
+                                                         (  _/          \_  )
+                                                          |  `\        /`  |
+                                                          |___|        |___|
+                                                          |===/        \===|
+                                                        _/\._(          )_./\_
+                                                      /      `|         |    _`\
+                                                      `""""`""           ""`"""`
+  EOF
+   `say -v Amelie "Are you ready #{@user.name}"`
+   sleep(1)
+   User.find_by(name: @name).exercises.each_with_index do |o,i|
+     reset
+     20.times {puts ""}
+       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+       puts "#{o.description}".center(200)
+       `say -v Samantha "Exercise #{i+1} #{o.name} for #{o.duration} minutes where you #{o.description}"`
+       sleep(1)
+       `say -v Samantha "Starting in 5 4 3 2 1"`
+       pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
+       puts ""
+       puts ""
+       puts ""
 
-  def share_wod #Stretch goal
+        5.times do
+          i = 1
+          while i < 5
+            print "\033[2J"
+            File.foreach(File.expand_path("../../lib/animations/workout/#{i}.rb", __FILE__)){ |f| puts f }
+            sleep(0.5)
+            i += 1
+          end
+        end
+
+        pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
+        sleep(3)
+        reset
+       puts ""
+       `say -v Samantha "Break time meditate with Julia for 30 seconds"`
+
+       puts "meditation animation goes here".center(200)
+       puts "play meditation music if possible".center(200)
+       sleep(5)
+
+       pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
+       sleep(3)
+    end
+    puts ""
+    `say -v Samantha "All done. You are the champion!"`
   end
 
 end
