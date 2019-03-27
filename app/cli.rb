@@ -74,7 +74,7 @@ class CLI
     answer = @prompt.select("What would you like to do today?") do |menu|
       menu.enum '.'
       menu.choice "Personalise my workout routine",1
-      menu.choice "Browse individual exercises",2
+      menu.choice "Exercises library",2
       menu.choice "Find a nearby gym",3
       menu.choice "Delete my things",4
       menu.choice "Exit",5
@@ -90,7 +90,7 @@ class CLI
         find_gym
         back_to_main_menu
       when 4
-        delete_account
+        delete_things_menu
       when 5
         exit
       when 6
@@ -267,10 +267,10 @@ end
   def exercises_menu
     reset
     logo
-    puts @pastel.blue.bold"Current Page: --Exercises Menu"
+    puts @pastel.blue.bold"Current Page: --Exercises Library Menu"
     answer = @prompt.select("Here are some things you could do now:") do |menu|
       menu.enum '.'
-      menu.choice "View the entire exercise database", 1
+      menu.choice "View the entire exercise library", 1
       menu.choice "View all your custom exercises", 2
       menu.choice "Edit/Delete your custom exercise", 3
       menu.choice "Create a new custom exercise", 4
@@ -428,35 +428,61 @@ end
     @prompt.say("The exercise has been deleted from the database ┐(‘～`；)┌\n")
   end
 
-  def delete_all_my_custom_exercises
-    Exercise.where(user_id: @user.id).destroy_all
-    @prompt.say("All your custom exercises have been deleted from the database (╥_╥)\n")
-  end
-
-  def delete_account
+  def delete_things_menu
+    reset
+    logo
+    puts @pastel.blue.bold"Current Page: --Delete My Things Menu"
     @prompt.say("Oh no, what did we do? Did you get here by mistake? ☉▵☉")
     answer = @prompt.select("What exactly are you looking for?") do |menu|
       menu.enum '.'
-      menu.choice "Delete all my custom exercises only.", 1
+      menu.choice "Delete all my custom exercises.", 1
       menu.choice "Delete my account, including all custom exercises I have created.", 2
-      menu.choice "Delete your account but keep your custom exercises.", disabled: "(Not allowed)"
       menu.choice "Forget about it, take me back to Main Menu.", 3
     end
 
     case answer
     when 1
       delete_all_my_custom_exercises
-      @prompt.say("ヾ｜￣ー￣｜ﾉ All your custom exercises are deleted.")
       back_to_main_menu
     when 2
+      delete_account
+      exit
+    when 3
+      @prompt.say("(¬‿¬) Glad you chose to not be a destroyer!")
+      back_to_main_menu
+    end
+  end
+
+  def delete_all_my_custom_exercises
+    answer = @prompt.select("Are you very, very, very, very sure?") do |menu|
+      menu.choice "Yep!", 1
+      menu.choice "Er.", 2
+    end
+
+    case answer
+    when 1
+      Exercise.where(user_id: @user.id).destroy_all
+      @prompt.say("ヾ｜￣ー￣｜ﾉ All your custom exercises are now deleted.")
+    when 2
+      reset
+      main_menu
+    end
+  end
+
+  def delete_account
+    answer = @prompt.select("Are you very, very, very, very sure?") do |menu|
+      menu.choice "Yep!", 1
+      menu.choice "Er.", 2
+    end
+    case answer
+    when 1
       delete_all_my_custom_exercises
       Routine.where(user_id: @user.id).destroy_all
       User.where(id: @user.id).destroy_all
-      @prompt.say("~,~ Sad to see you go but hope you have a good life.")
-      exit
-    when 3
-      @prompt.say("(¬‿¬) Glad you chose to stay! Sending you back to Main Menu...")
-      back_to_main_menu
+      @prompt.say("(╥_╥) Sad to see you go but hope you have a good life.")
+    when 2
+      reset
+      main_menu
     end
   end
 
