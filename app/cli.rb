@@ -136,7 +136,7 @@ class CLI
       puts @pastel.red("Looks like you don't have a previous WOD yet.")
       back_to_your_workout_menu
     else
-      @prompt.say("Here is the WOD (#{@duration} mins) from your previous visit:")
+      @prompt.say("Here is the WOD (#{@duration} mins) from your previous visit:", color: :blue)
       view_wod
     end
   end
@@ -159,30 +159,36 @@ end
 
   def new_wod
     if @duration == 0
-      reset_duration_and_get_random_wod
+      reset_duration
+      get_random_wod
     else
       @prompt.say("Your last WOD was #{@duration} mins.")
-      answer = @prompt.yes?("Would you like to change the duration today?")#programme better if not y/n
-      if answer
+      answer = @prompt.select("Would you like to change your workout duration today?") do |menu|
+        menu.choice "Yes", 1
+        menu.choice "No", 2
+      end
+      case answer
+      when 1
         destroy_my_routine
-        reset_duration_and_get_random_wod
-      else
+        reset_duration
+        get_random_wod
+      when 2
         get_random_wod
       end
     end
   end
 
-  def reset_duration_and_get_random_wod
+  def reset_duration
     @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DONT BE LAZY!)")
     @prompt.say("Thanks, let me get a WOD for you right now.")
-    get_random_wod
+    @duration = @duration.to_i
   end
 
   def get_random_wod
     current_duration = 0
-    until current_duration >= @duration.to_i
+    until current_duration >= @duration
       selected = Exercise.all.sample
-      if (current_duration += selected.duration) <= @duration.to_i
+      if (current_duration += selected.duration) <= @duration
         Routine.create(user_id: @user.id, exercise_id: selected.id)
       else
         current_duration -= selected.duration
@@ -204,7 +210,8 @@ end
         confirm_wod_and_go
       when 2
         destroy_my_routine
-        reset_duration_and_get_random_wod
+        reset_duration
+        get_random_wod
       when 3
         create_wod
       when 4
@@ -213,12 +220,16 @@ end
   end
 
   def confirm_wod_and_go
-    answer = @prompt.yes?("ARE YOU READY????")
-    if answer
-      puts "do run_wod"
+    answer = @prompt.select("Are you ready for this?") do |menu|
+      menu.choice "Yes, let's do this!", 1
+      menu.choice "Not really.", 2
+    end
+    case answer
+    when 1
+      @prompt.say("do run_wod")
       back_to_main_menu
-    else
-      puts "Fine, let's go back to the menu and you make up your mind what you want to do!"
+    when 2
+      @prompt.say("Fine, come back when you're ready!")
       back_to_exercises_menu
     end
   end
@@ -304,21 +315,18 @@ end
   end
 
   def create_custom_exercise
-    puts "Have a signature move? Share it with other users!"
+    @prompt.say("Have a signature move? Share it with other users!")
     e_name = @prompt.ask("What is your exercise name called?") do |q|
       q.required true
-      # q.validate /\A\w+\Z/
     end
     e_description = @prompt.ask("Please enter a short description of #{e_name}:") do |q|
       q.required true
-      # q.validate /\A\w+\Z/
     end
     e_duration = @prompt.ask("How many minutes will it take to complete this exercise?") do |q|
       q.required true
-      # q.validate /^\d+$/
     end
     Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
-    puts "Congratulations, #{e_name} is now on our exercise database!"
+    @prompt.say("ヽ(^◇^*)/ Excellent, #{e_name} is now on our exercise database!")
     back_to_exercises_menu
   end
 
@@ -412,10 +420,10 @@ end
       delete_all_my_custom_exercises
       Routine.where(user_id: @user.id).destroy_all
       User.where(id: @user.id).destroy_all
-      puts "Sad to see you go but hope you have a good life."
+      @prompt.say("Sad to see you go but hope you have a good life.")
       exit
     when 3
-      puts "Glad you chose to stay! Sending you back to Main Menu..."
+      @prompt.say("Glad you chose to stay! Sending you back to Main Menu...")
       back_to_main_menu
     end
   end
