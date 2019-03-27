@@ -43,6 +43,7 @@ class CLI
     @name = @prompt.ask("What is your first name?") do |q|
         q.required true
     end
+    @name = @name.split.map(&:capitalize).join(" ")
   end
 
   def set_up_user_and_greet
@@ -50,15 +51,15 @@ class CLI
       @user = User.find_by(name: @name)
       @duration = @user.exercises.sum(:duration)
       puts @pastel.blue"Welcome back #{@name}. Have a great workout today!"
-      spinner = TTY::Spinner.new("[:spinner] Loading ...", format: :pulse_2)
+      spinner = TTY::Spinner.new("[:spinner] Loading app...", format: :pulse_2)
       spinner.auto_spin
       sleep(1)
       spinner.stop("Let's go!")
     else
       @user = User.create(name: @name, duration: 0)
       @duration = @user.exercises.sum(:duration)
-      puts @pastel.blue"Looks like it's your first time here, #{@name}. Hope you enjoy our app!"
-      spinner = TTY::Spinner.new("[:spinner] Loading ...", format: :pulse_2)
+      puts @pastel.blue"Hey, #{@name}, it's your first time here, welcome! Hope you enjoy our app!"
+      spinner = TTY::Spinner.new("[:spinner] Loading app...", format: :pulse_2)
       spinner.auto_spin
       sleep(2)
       spinner.stop("Let's go!")
@@ -136,7 +137,6 @@ class CLI
       puts @pastel.red("Looks like you don't have a previous WOD yet.")
       back_to_your_workout_menu
     else
-      @prompt.say("Here is the WOD (#{@duration} mins) from your previous visit:", color: :blue)
       view_wod
     end
   end
@@ -162,7 +162,7 @@ end
       reset_duration
       get_random_wod
     else
-      @prompt.say("Your last WOD was #{@duration} mins.")
+      @prompt.say("Your last WOD was #{@duration} mins.", color: :green)
       answer = @prompt.select("Would you like to change your workout duration today?") do |menu|
         menu.choice "Yes", 1
         menu.choice "No", 2
@@ -179,8 +179,11 @@ end
   end
 
   def reset_duration
-    @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DONT BE LAZY!)")
-    @prompt.say("Thanks, let me get a WOD for you right now.")
+    @duration = @prompt.ask("How long would you like to workout today, in minutes? (MINIMUM 5 MINS, DON'T BE LAZY! MAXIMUM 30 MINUTES, DON'T BE A HERO.)") do |q|
+      q.in '5-30'
+      q.messages[:range?] = 'Which part of between 5 and 30 did you not understand???'
+    end
+    @prompt.say("Thanks, let me get a WOD for you right now.", color: :green)
     @duration = @duration.to_i
   end
 
