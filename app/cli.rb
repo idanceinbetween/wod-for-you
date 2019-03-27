@@ -1,4 +1,3 @@
-# require_all '../lib/'
 require 'pry'
 require 'TTY'
 
@@ -11,19 +10,25 @@ class CLI
  end
 
  def welcome
-   puts @pastel.red(@font.write("                 WOD",letter_spacing: 4))
+   puts @pastel.blue(@font.write("Flatiron - WOD",letter_spacing: 2))
    puts "\n \n"
-   puts @pastel.red.bold'               ᕙ( * •̀ ᗜ •́ * )ᕗ     ARE YOU READY TO GET MOVING MOVING?       ᕦ╏ ʘ̆ ‸ ʘ̆ ╏ᕤ'
-   puts @pastel.red'               A coder & bored of your usual workout?'
-   puts @pastel.red'               Workout of the Day app will:'
+   puts @pastel.green.bold'                             ᕦ╏ ʘ̆ ‸ ʘ̆ ╏ᕤ'
+   puts ""
+   puts @pastel.red.bold"                            ASPIRING CODER\n"
+   puts @pastel.red.bold'          Need to focus on your code craft, but still want to keep working out?'
+   puts @pastel.red'               Flatiron Workout of the Day app will:'
    puts @pastel.red'               * suggest a routine that suits your busy schedule'
-   puts @pastel.red'               * discover exciting exercises for your body'
+   puts @pastel.red'               * discover exciting exercises you never knew existed'
    puts @pastel.red'               * sharpen your mind for coding whilst you workout'
+   puts ""
+   puts @pastel.red.bold'                       ARE YOU READY TO GET MOVING?'
+   puts ""
+   puts @pastel.green.bold'                            ᕙ( * •̀ ᗜ •́ * )ᕗ'
    puts "\n \n"
  end
 
  def logo
-   puts @pastel.red(@font.write("                 WOD",letter_spacing: 4))
+   puts @pastel.blue(@font.write("Flatiron - WOD",letter_spacing: 2))
    puts @pastel.blue"٩◔‿◔۶ Logged in as: #{@user.name}"
    puts "\n \n"
  end
