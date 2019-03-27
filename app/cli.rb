@@ -9,25 +9,39 @@ class CLI
    @font = TTY::Font.new(:doom)
  end
 
- def greet
-   puts @pastel.red(@font.write("         WOD",letter_spacing: 4))
-   puts @pastel.red.bold'                 ARE YOU READY TO GET THE BODY OF YOUR DREAMS?????????? YEAHHHHHHHH'
+ def welcome
+   puts @pastel.red(@font.write("                 WOD",letter_spacing: 4))
+   puts "\n \n"
+   puts @pastel.red.bold'               ᕙ( * •̀ ᗜ •́ * )ᕗ     ARE YOU READY TO GET MOVING MOVING?       ᕦ╏ ʘ̆ ‸ ʘ̆ ╏ᕤ'
+   puts @pastel.red'               A coder & bored of your usual workout?'
+   puts @pastel.red'               Workout of the Day app will:'
+   puts @pastel.red'               * suggest a routine that suits your schedule'
+   puts @pastel.red'               * discover exciting exercises for your body'
+   puts @pastel.red'               * sharpen your mind for coding whilst you workout!'
+   puts "\n \n"
+ end
+
+ def logo
+   puts @pastel.red(@font.write("                 WOD",letter_spacing: 4))
+   puts @pastel.blue"٩◔‿◔۶ Logged in as: #{@user.name}"
+   puts "\n \n"
+ end
+
+ def reset
+   system("clear")
  end
 
   def start
-    greet
+    reset
+    welcome
     get_name
     set_up_user_and_greet
     main_menu
-    # confirm_duration
-    # create_custom_exercise
-    # view_my_custom_exercises
   end
 
   def get_name
     @name = @prompt.ask("What is your first name?") do |q|
         q.required true
-        q.validate /\A\w+\Z/
     end
   end
 
@@ -35,55 +49,72 @@ class CLI
     if User.find_by(name: @name)
       @user = User.find_by(name: @name)
       @duration = @user.exercises.sum(:duration)
-      @prompt.say("Welcome back #{@name}!")
+      puts @pastel.blue"Welcome back #{@name}. Have a great workout today!"
+      spinner = TTY::Spinner.new("[:spinner] Loading ...", format: :pulse_2)
+      spinner.auto_spin
+      sleep(1)
+      spinner.stop("Let's go!")
     else
       @user = User.create(name: @name, duration: 0)
       @duration = @user.exercises.sum(:duration)
-      @prompt.say("Looks like it's your first time here, #{@name}. Hope you enjoy our app!")
+      puts @pastel.blue"Looks like it's your first time here, #{@name}. Hope you enjoy our app!"
+      spinner = TTY::Spinner.new("[:spinner] Loading ...", format: :pulse_2)
+      spinner.auto_spin
+      sleep(2)
+      spinner.stop("Let's go!")
     end
   end
 
   def main_menu
+    reset
+    logo
+    puts @pastel.blue.bold"Current Page: Main Menu"
     answer = @prompt.select("What would you like to do today?") do |menu|
-      menu.enum '.'
-      menu.choice "Workout now!",1
-      menu.choice "Browse exercises (including your custom ones!)",2
-      menu.choice "Find Gym - PAY FOR THIS FEATURE MATE",3
-      menu.choice "Delete Account (Nooooooooooo...)",4
-      menu.choice "CAN'T DEAL WITH THIS ANYMORE. Time for cake. GOODBYE",5
+      menu.choice "Workout now",1
+      menu.choice "Browse exercises",2
+      menu.choice "Find a nearby gym",3
+      menu.choice "Delete my account",4
+      menu.choice "Exit",5
+      menu.choice "Change user",6
     end
 
     case answer
       when 1
-        workout_now_menu
+        your_workout_menu
       when 2
-        browse_exercises_menu
+        exercises_menu
       when 3
-        closest_gyms
+        find_gym
       when 4
         delete_account
       when 5
         exit
+      when 6
+        change_user
     end
-
   end
 
-  def workout_now_menu
+  def back_to_main_menu
+    answer = @prompt.select("Back to Main Menu.") do |menu|
+      menu.choice "Confirm", 1
+    end
+    answer.to_i == 1 ? main_menu : ""
+  end
+
+  def your_workout_menu
+    reset
+    logo
+    puts @pastel.blue.bold"Current Page: --Workout Menu"
     answer = @prompt.select("Here are some things you could do now:") do |menu|
-      menu.enum '.'
-      menu.choice "View your last WOD", 1
+      menu.choice "Review your last WOD", 1
       menu.choice "Get new WOD", 2
       menu.choice "Create your own WOD", 3
-      menu.choice "Back to main menu", 4
+      menu.choice "Back to Main Menu", 4
     end
 
     case answer.to_i
       when 1
-        if @duration == 0
-          @prompt.error("Looks like you don't have a previous WOD yet. Please select Get new WOD or Create your own WOD from the menu.")
-        else
-          last_wod
-        end
+        last_wod
       when 2
         new_wod
       when 3
@@ -93,25 +124,46 @@ class CLI
     end
   end
 
-  def last_wod
-      @prompt.say("Here is your WOD (#{@duration} mins) from the previous visit:")
-      display_wod
-      workout_now_menu
+  def back_to_your_workout_menu
+    answer = @prompt.select("Go back to previous menu.") do |menu|
+      menu.choice "Confirm", 1
+    end
+    answer == 1 ? your_workout_menu : ""
   end
 
-  def display_wod
-    User.find_by(name: @name).exercises.each_with_index do |o,i|
-      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+  def last_wod
+    if @duration == 0
+      puts @pastel.red("Looks like you don't have a previous WOD yet.")
+      back_to_your_workout_menu
+    else
+      @prompt.say("Here is the WOD (#{@duration} mins) from your previous visit:")
+      view_wod
     end
   end
+
+  def view_wod
+   reset
+   logo
+   puts "Reviewing Your WOD (#{@duration} mins)".center(200)
+   puts ""
+   puts "==============================================================".center(200)
+   User.find_by(name: @name).exercises.each_with_index do |o,i|
+     puts ""
+     puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+     puts "#{o.description}".center(200)
+     puts ""
+     puts "==============================================================".center(200)
+   end
+   new_or_create_wod
+end
 
   def new_wod
     if @duration == 0
       reset_duration_and_get_random_wod
     else
       @prompt.say("Your last WOD was #{@duration} mins.")
-      answer1 = @prompt.yes?("Would you like to change the duration today?")#programme better if not y/n
-      if answer1
+      answer = @prompt.yes?("Would you like to change the duration today?")#programme better if not y/n
+      if answer
         destroy_my_routine
         reset_duration_and_get_random_wod
       else
@@ -127,7 +179,6 @@ class CLI
   end
 
   def get_random_wod
-    @prompt.say("Here is a WOD of #{@duration} mins: \n")
     current_duration = 0
     until current_duration >= @duration.to_i
       selected = Exercise.all.sample
@@ -137,23 +188,38 @@ class CLI
         current_duration -= selected.duration
       end
     end
-    display_wod
-    new_or_create_wod
+    view_wod
   end
 
   def new_or_create_wod
-    answer = @prompt.select("Would you like to proceed with this WOD or create your own WOD instead?", %w(Proceed Create))
-    answer == "Proceed" ? confirm_wod_and_go : create_wod
+    answer = @prompt.select("What do you think?") do |menu|
+      menu.choice "Great WOD, let's workout now!", 1
+      menu.choice "Not sure about it, get a new WOD for me.", 2
+      menu.choice "Don't like any of it! I'll create my own WOD.", 3
+      menu.choice "Not feeling it now, take me back to the previous menu.", 4
+    end
+
+    case answer
+      when 1
+        confirm_wod_and_go
+      when 2
+        destroy_my_routine
+        reset_duration_and_get_random_wod
+      when 3
+        create_wod
+      when 4
+        your_workout_menu
+      end
   end
 
   def confirm_wod_and_go
     answer = @prompt.yes?("ARE YOU READY????")
     if answer
       puts "do run_wod"
-      main_menu
+      back_to_main_menu
     else
-      puts "fine, let's go back to the menu and you make up your mind what you want to do!"
-      main_menu
+      puts "Fine, let's go back to the menu and you make up your mind what you want to do!"
+      back_to_exercises_menu
     end
   end
 
@@ -171,20 +237,23 @@ class CLI
     end
     @my_wod = @prompt.multi_select("Please pick your exercises.", hash) #array of exercise.id
     @my_wod.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
-    @prompt.say("Your WOD is the following:")
-    display_wod
+    @prompt.say("Your WOD is created and saved as the following:")
+    view_wod
     confirm_wod_and_go
     # #stretch goals: display total mins of selected exercises
   end
 
-  def browse_exercises_menu
+  def exercises_menu
+    reset
+    logo
+    puts @pastel.blue.bold"Current Page: --Exercises Menu"
     answer = @prompt.select("Here are some things you could do now:") do |menu|
       menu.enum '.'
       menu.choice "View the entire exercise database", 1
       menu.choice "Create your custom exercise!", 2
       menu.choice "View all custom exercises that you shared (you're the best!)", 3
       menu.choice "Edit/Delete your custom exercise!", 4
-      menu.choice "Back to main menu", 5
+      menu.choice "Back to Main Menu", 5
     end
 
     case answer.to_i
@@ -195,14 +264,14 @@ class CLI
       when 3
         if my_custom_exercises.length ==0
           @prompt.error("You haven't created any custom exercises yet. Perhaps you would like to create one now?")
-          browse_exercises_menu
+          back_to_exercises_menu
         else
           view_my_custom_exercises
         end
       when 4
         if my_custom_exercises.length ==0
           @prompt.error("You have no custom exercises to edit or delete. Please select another option.")
-          browse_exercises_menu
+          back_to_exercises_menu
         else
           select_my_custom_exercise
         end
@@ -211,11 +280,27 @@ class CLI
     end
   end
 
-  def view_all_exercises
-    Exercise.all.each_with_index do |o,i|
-      puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
+  def back_to_exercises_menu
+    answer = @prompt.select("Go back to previous menu.") do |menu|
+      menu.choice "Confirm.", 1
     end
-    browse_exercises_menu
+    answer == 1 ? exercises_menu : ""
+  end
+
+  def view_all_exercises
+    reset
+    logo
+    puts "Reviewing Exercises Database".center(200)
+    puts ""
+    puts "==============================================================".center(200)
+    Exercise.all.each_with_index do |o,i|
+      puts ""
+      puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+      puts "#{o.description}".center(200)
+      puts ""
+      puts "==============================================================".center(200)
+    end
+    back_to_exercises_menu
   end
 
   def create_custom_exercise
@@ -234,7 +319,7 @@ class CLI
     end
     Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
     puts "Congratulations, #{e_name} is now on our exercise database!"
-    browse_exercises_menu
+    back_to_exercises_menu
   end
 
   def my_custom_exercises
@@ -242,11 +327,19 @@ class CLI
   end
 
   def view_my_custom_exercises
-      puts "Here are the custom exercises you created. Thank you for the love <3: \n"
-      @my_exercises.each_with_index do |o,i|
-        puts "#{i+1}. #{o.name} (#{o.duration} mins) \n #{o.description}"
-      end
-    browse_exercises_menu
+    reset
+    logo
+    puts "Reviewing All Your Custom Exercises".center(200)
+    puts ""
+    puts "==============================================================".center(200)
+    @my_exercises.each_with_index do |o,i|
+      puts ""
+      puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+      puts "#{o.description}".center(200)
+      puts ""
+      puts "==============================================================".center(200)
+    end
+    back_to_exercises_menu
   end
 
   def select_my_custom_exercise
@@ -272,17 +365,17 @@ class CLI
     case answer
       when 1
         edit_my_custom_exercise
-        browse_exercises_menu
+        back_to_exercises_menu
       when 2
         delete_my_custom_exercise
-        browse_exercises_menu
+        back_to_exercises_menu
     end
   end
 
   def edit_my_custom_exercise
-    name = @prompt.ask("Please enter the updated name:")
-    description = @prompt.ask("Please enter the updated description:")
-    duration = @prompt.ask("Please enter the updated duration:")
+    name = @prompt.ask("Please enter the updated name: (Currently: #{@selected_custom_exercise.name})")
+    description = @prompt.ask("Please enter the updated description: (Currently: #{@selected_custom_exercise.description})")
+    duration = @prompt.ask("Please enter the updated duration: (Currently: #{@selected_custom_exercise.duration})")
     Exercise.update(@selected_custom_exercise_id, name: name, description: description, duration: duration)
     @prompt.say("Fab! All updated as below:")
     @prompt.say("#{@selected_custom_exercise.name}")
@@ -292,32 +385,54 @@ class CLI
 
   def delete_my_custom_exercise
     @selected_custom_exercise.destroy
-    browse_exercises_menu
+    @prompt.say("The exercise has been deleted from the database.")
+    back_to_exercises_menu
   end
 
   def delete_all_my_custom_exercises
     Exercise.where(user_id: @user.id).destroy_all
+    @prompt.say("All your custom exercises have been deleted from the database.")
+    back_to_exercises_menu
   end
 
   def delete_account
-    @prompt.say("Oh no, what did we do? Why are you leaving us????")
-    answer = @prompt.yes?("Are you sure you want to delete your account? It will also delete all custom exercises that you created.")
-    if answer
+    @prompt.say("Oh no, what did we do? Did you get here by mistake?")
+    answer = @prompt.select("What exactly are you looking for? \n It is not possible to delete your account but keep your custom exercises.") do |menu|
+      menu.choice "Delete all my custom exercises only.", 1
+      menu.choice "Delete my account, including all custom exercises I have created.", 2
+      menu.choice "Forget about it, take me back to Main Menu."
+    end
+
+    case answer
+    when 1
+      delete_all_my_custom_exercises
+      @prompt.say("All your custom exercises are deleted.")
+      back_to_main_menu
+    when 2
       delete_all_my_custom_exercises
       Routine.where(user_id: @user.id).destroy_all
       User.where(id: @user.id).destroy_all
-      puts "Sad to see you go. Hope you have a good life."
-    else
-      puts "YES. That's the right thing to do. Off you go - back to the main menu."
-      main_menu
+      puts "Sad to see you go but hope you have a good life."
+      exit
+    when 3
+      puts "Glad you chose to stay! Sending you back to Main Menu..."
+      back_to_main_menu
     end
   end
 
   def exit
+    #image of a cake OR link to Dum Dum Doughnuts
+    reset
   end
 
-  def closest_gyms #Stretch goal
-    main_menu
+  def change_user
+    start
+  end
+
+  def find_gym
+    @postcode = @prompt.ask("What is your postcode?")
+    Launchy.open("www.google.com/maps/search/?api=1&query=gyms+near #{@postcode}")
+    back_to_main_menu
   end
 
   def music_suggest #Stretch goal

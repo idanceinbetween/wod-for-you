@@ -9,11 +9,11 @@ User.create([
     {name: "user5", duration: 3}
 ])
 Exercise.create([
-    {name: "Exercise 1", description: "E Description 1", duration: 3},
-    {name: "Exercise 2", description: "E Description 2", duration: 2},
-    {name: "Exercise 3", description: "E Description 3", duration: 10},
-    {name: "Exercise 4", description: "E Description 4", duration: 5},
-    {name: "Exercise 5", description: "E Description 5", duration: 1}
+    {name: "Turn up the heat", description: "Warm up with deep breathing exercises with fire, ", duration: 2},
+    {name: "Git Push Pry", description: "Keep doing pushups until you PRY", duration: 3},
+    {name: "One Handed Pry Push Ups", description: "Debug code while doing one handed pushups", duration: 2},
+    {name: "Pull Hash", description: "Do Pullups while iterating through a hash", duration: 10},
+    {name: "Pry Duck", description: "Throw your coding duck at your partner", duration: 5},
 ])
 
 Routine.create([
