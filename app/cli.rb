@@ -14,7 +14,8 @@ class CLI
    2.times {line_break}
    puts @pastel.green.bold'                             ᕦ╏ ʘ̆ ‸ ʘ̆ ╏ᕤ'
    line_break
-   puts @pastel.red.bold"                            ASPIRING CODER\n"
+   puts @pastel.red.bold"                            ASPIRING CODER"
+   line_break
    puts @pastel.red.bold'          Need to focus on your code craft, but still want to keep working out?'
    puts @pastel.red'               Flatiron Workout of the Day app will:'
    puts @pastel.red'               * suggest a routine that suits your busy schedule'
@@ -562,9 +563,13 @@ class CLI
       play_workout_music
       workout_animation
       sleep(2)
+      play_whistle
+      reset
+      sleep(2)
       meditation
       play_whistle
-      sleep(3)
+      reset
+      sleep(2)
       stop_it
       break if @stop_answer.length > 0
     end
@@ -601,15 +606,20 @@ class CLI
 
   def meditation
     `say -v Samantha "Break time. Meditate with Julia for 30 seconds."`
+    play_meditation_music
     2.times do
       i = 1
       while i < 20 #this runs through the entire animation once, don't touch.
         print "\033[2J"
         File.foreach(File.expand_path("../../lib/animations/meditation/#{i}.rb", __FILE__)){ |f| puts f }
-        sleep(0.1)
+        sleep(0.2)
         i += 1
       end
     end
+  end
+
+  def play_meditation_music
+    pid = fork{ exec 'afplay', File.expand_path("../../lib/media/meditation_clean.mp3", __FILE__) }
   end
 
   def run_wod_ending

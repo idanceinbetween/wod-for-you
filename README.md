@@ -30,9 +30,13 @@ Technically, Flatiron WOD uses a database to persist information using the follo
 After you've downloaded the entire project folder, open up your Terminal. Everything will run from there.
 If you are not sure how to use Terminal, take a look at this documentation: https://blog.teamtreehouse.com/introduction-to-the-mac-os-x-command-line.
 Once in the terminal and navigated to the project folder:
-- Run `bundle install`
-- Run `/bin/run.rb`
+- Run `bundle install` to ensure all dependencies are installed.
+- Run `rake db:drop db:create db:migrate db:seed` to initialise the app.
+- Run `rake run`.
+
 Then off you go!
+
+If anything goes wrong, please use Ctrl+C on MacOS.
 
 ## Authors and acknowledgment
 The authors are George Wong and JiaXuan Hon from Inglorious Bashterds of Flatiron School in London.
