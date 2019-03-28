@@ -514,7 +514,7 @@ end
 
   def run_wod
     reset
-    # run_wod_welcome
+    run_wod_welcome
     run_wod_loop_with_breaks
     run_wod_ending
     back_to_main_menu
@@ -527,9 +527,6 @@ end
    sleep(1)
   end
 
-  #sh: -c: line 0: unexpected EOF while looking for matching `"'
-  #sh: -c: line 1: syntax error: unexpected end of file
-
   def run_wod_loop_with_breaks
     my_wod.each_with_index do |o,i|
       reset
@@ -537,45 +534,27 @@ end
       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
       puts "#{o.description}".center(200)
       `say -v Samantha "Exercise #{i+1}. #{o.name} for #{o.duration} minutes, where you #{o.description}"`
-      # voice_countdown
-      # play_whistle
-      # workout_animation
+      voice_countdown
+      play_whistle
+      sleep(2)
+      play_workout_music
+      workout_animation
+      sleep(2)
       meditation
-      stop_it
-      break if @stop_answer.length > 0
       play_whistle
       sleep(3)
+      stop_it
+      break if @stop_answer.length > 0
     end
   end
 
   def stop_it
-    @stop_answer = @prompt.keypress("Want to give up now? Press any key in the next 3 seconds!", timeout: 3)
+    @stop_answer = @prompt.keypress("Want to give up now? Press any key in the next :countdown seconds...!", timeout: 3)
     @stop_answer = @stop_answer.to_s
   end
 
-  # Working code
-  # def run_wod_loop_with_breaks
-  #   my_wod.each_with_index do |o,i|
-  #     reset
-  #
-  #     20.times {line_break}
-  #     puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
-  #     puts "#{o.description}".center(200)
-  #     `say -v Samantha "Exercise #{i+1}. #{o.name} for #{o.duration} minutes, where you #{o.description}"`
-  #
-  #     voice_countdown
-  #     play_whistle
-  #     workout_animation
-  #     meditation
-  #     play_whistle
-  #     sleep(3)
-  #  end
-  # end
-
   def voice_countdown
-    `say -v Samantha "Starting in 5"`
-    `say -v Samantha "4"`
-    `say -v Samantha "3"`
+    `say -v Samantha "Starting in 3"`
     `say -v Samantha "2"`
     `say -v Samantha "1"`
   end
@@ -594,6 +573,10 @@ end
      end
   end
 
+  def play_workout_music
+   pid = fork{ exec 'afplay', File.expand_path("../../lib/media/workout_music.mp3", __FILE__) }
+ end
+
   def meditation
     `say -v Samantha "Break time. Meditate with Julia for 30 seconds."`
     2.times do
@@ -609,9 +592,9 @@ end
 
   def run_wod_ending
     if @stop_answer.length > 0
-      `say -v Samantha "Pry harder next time, but all done for now!`
-    else
-      `say -v Samantha "All done. You are the champion!"`
+      `say -v Samantha "Pry harder next time, but all done for now!"`
+    elsif @stop_answer.length == 0
+      `say -v Samantha "All done champion. You made it to the end!"`
     end
   end
 
