@@ -40,7 +40,6 @@ If anything goes wrong, please use Ctrl+C on MacOS.
 
 ## Authors and acknowledgment
 The authors are George Wong and JiaXuan Hon from Inglorious Bashterds of Flatiron School in London.
-George did the crazy animations and media files. JiaXuan did the backend.
 This app was built specifically as a project for Module 1 at Flatiron School. We acknowledge the help of all Technical Coaches at Flatiron School - Nico, Guy and Vasile, and the entire Inglorious Bashterds (London, 2019).
 
 ## Support
