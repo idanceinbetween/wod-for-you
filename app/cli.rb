@@ -526,28 +526,6 @@ class CLI
     end
   end
 
-  def exit
-    #image of a cake OR link to Dum Dum Doughnuts
-    reset
-  end
-
-  def change_user
-    start
-  end
-
-  def find_gym
-    @postcode = @prompt.ask("What is your postcode?")
-    Launchy.open("www.google.com/maps/search/?api=1&query=gyms+near #{@postcode}")
-  end
-
-  def run_wod
-    reset
-    run_wod_welcome
-    run_wod_loop_with_breaks
-    run_wod_ending
-    back_to_main_menu
-  end
-
   def run_wod_welcome
     print "\033[2J" #print static_workout animation
     File.foreach(File.expand_path("../../lib/animations/static_workout/1.rb", __FILE__)){ |f| puts f }
@@ -633,6 +611,27 @@ class CLI
     elsif @stop_answer.length == 0
       `say -v Samantha "All done champion. You made it to the end!"`
     end
+  end
+
+  def find_gym
+    @postcode = @prompt.ask("What is your postcode?")
+    Launchy.open("www.google.com/maps/search/?api=1&query=gyms+near #{@postcode}")
+  end
+
+  def run_wod
+    reset
+    run_wod_welcome
+    run_wod_loop_with_breaks
+    run_wod_ending
+    back_to_main_menu
+  end
+
+  def change_user
+    start
+  end
+  
+  def exit
+    reset
   end
 
 end

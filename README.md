@@ -20,11 +20,12 @@ We have been in the same place, and have designed Flatiron WOD to overcome this 
 - Users can delete their own account and all associated information from the app's database, a special feature that adheres to the latest GDPR regulations.
 
 ## Technical Details
-Technically, Flatiron WOD uses a database to persist information using the following skills and knowledge:
+Flatiron WOD uses a database to persist information and was build using the following skills and knowledge:
 - Ruby
 - Object Orientation
 - Relationships (via ActiveRecord)
 - Problem Solving (via creating a Command Line Interface (CLI))
+- Open API (Google Maps API)
 
 ## Installation
 After you've downloaded the entire project folder, open up your Terminal. Everything will run from there.
@@ -32,11 +33,9 @@ If you are not sure how to use Terminal, take a look at this documentation: http
 Once in the terminal and navigated to the project folder:
 - Run `bundle install` to ensure all dependencies are installed.
 - Run `rake db:drop db:create db:migrate db:seed` to initialise the app.
-- Run `rake run`.
+- Run `rake run` or `ruby bin/run.rb`. Life is full of choices.
 
 Then off you go!
-
-If anything goes wrong, please use Ctrl+C on MacOS.
 
 ## Authors and acknowledgment
 The authors are George Wong and JiaXuan Hon from Inglorious Bashterds of Flatiron School in London.
