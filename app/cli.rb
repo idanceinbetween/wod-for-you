@@ -152,7 +152,7 @@ class CLI
     else
       reset
       view_wod
-      new_or_create_wod
+      do_you_like_this_wod
     end
   end
 
@@ -163,6 +163,7 @@ class CLI
   def view_wod
    logo
    puts "Reviewing Your WOD (#{@duration} mins)".center(200)
+   duration_notes
    line_break
    puts "==============================================================".center(200)
    my_wod.each_with_index do |o,i|
@@ -172,9 +173,29 @@ class CLI
      line_break
      puts "==============================================================".center(200)
    end
-end
+ end
 
-  def new_wod
+ def duration_notes
+   if @duration < 5
+     puts @pastel.red("         Your WOD.duration < 5 minutes.").center(200)
+     puts @pastel.red("         Your WOD != Workout").center(200)
+   elsif @duration == 5
+     puts @pastel.green("      Your WOD == 0.5 biscuit || 1 line of code ").center(200)
+   elsif @duration > 5 && @duration <= 10
+     puts @pastel.green("      Your WOD == 15.235 biscuits || 4 lines of code ").center(200)
+   elsif @duration > 10 && @duration <= 15
+     puts @pastel.green("      Your WOD == 29.398 biscuits || 50 lines of code ").center(200)
+   elsif @duration > 15 && @duration <= 25
+     puts @pastel.green("      Your WOD == 109.058 biscuits || 304 lines of code ").center(200)
+   elsif @duration > 25 && @duration <= 30
+     puts @pastel.green("      Your WOD == 314.159 biscuits || 888 lines of code ").center(200)
+   elsif @duration > 30
+     puts @pastel.red("      Your current WOD.duration > 30 minutes.").center(200)
+     puts @pastel.red("           Are you on holiday or something?").center(200)
+   end
+ end
+
+ def new_wod
     if @duration == 0
       reset_duration
       get_random_wod
@@ -215,10 +236,10 @@ end
     end
     reset
     view_wod
-    new_or_create_wod
+    do_you_like_this_wod
   end
 
-  def new_or_create_wod
+  def do_you_like_this_wod
     answer = @prompt.select("What do you think?") do |menu|
       menu.enum '.'
       menu.choice "Great WOD! Let's workout now!", 1
@@ -267,13 +288,13 @@ end
       key = "#{o.id}. #{o.name} (#{o.duration} mins) - #{o.description}"
       hash[key] = o.id
     end
-    @prompt.say("Pick your exercises to be saved in your WOD (>'o')>")
-    selected = @prompt.multi_select("You are now responsible for your own workout duration!", hash)
+    puts @pastel.green.bold("You are now responsible for your own workout duration!")
+    selected = @prompt.multi_select("Pick your exercises to be saved in your WOD (>'o')>", hash)
     @my_wod = selected.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
-    @duration = @user.exercises.sum(:duration)
+    @duration = @user.exercises.sum(:duration).to_i
     reset
     view_wod
-    new_or_create_wod
+    do_you_like_this_wod
   end
 
   def exercises_menu
@@ -301,7 +322,7 @@ end
         end
       when 3
         if my_custom_exercises.length == 0
-          @prompt.say("You have no custom exercises to edit or delete. Please select another option.（ミ￣ー￣ミ", color: :red)
+          @prompt.say("You have no custom exercises to edit or delete. Please select another option.（ミ￣ー￣ミ)", color: :red)
           back_to_exercises_menu
         else
           select_my_custom_exercise
@@ -324,7 +345,7 @@ end
   def view_all_exercises
     reset
     logo
-    puts "Reviewing Exercises Database".center(200)
+    puts "Reviewing Exercises Library".center(200)
     line_break
     puts "==============================================================".center(200)
     Exercise.all.each_with_index do |o,i|
@@ -354,7 +375,7 @@ end
       q.messages[:range?] = "Coders ain't got any time, keep it within 30 mins!"
     end
     Exercise.create(name: e_name, description: e_description, duration: e_duration, user_id: @user.id)
-    @prompt.say("ヽ(^◇^*)/ #{e_name} is now on our exercise database!", color: :green)
+    @prompt.say("ヽ(^◇^*)/ #{e_name} is now on our exercise library!", color: :green)
     back_to_exercises_menu
   end
 
@@ -393,7 +414,7 @@ end
     answer = @prompt.select("Would you like to edit or delete #{@selected_custom_exercise.name}?") do |menu|
       menu.choice "Edit", 1
       menu.choice "Delete", 2
-      menu.choice "Go back. I changed my mind!", 3
+      menu.choice "Go back. I change my mind!", 3
     end
 
     case answer
@@ -427,17 +448,18 @@ end
       q.in '1-30'
       q.messages[:range?] = "Coders ain't got any time, keep it within 30 mins!"
     end
+    @selected_custom_exercise.duration = duration
 
     Exercise.update(@selected_custom_exercise_id, name: name, description: description, duration: duration)
-    @prompt.say("Fab! All updated as below:", color: :green)
-    @prompt.say("#{@selected_custom_exercise.name}")
-    @prompt.say("#{@selected_custom_exercise.description}")
-    @prompt.say("#{@selected_custom_exercise.duration}")
+    @prompt.say("ヽ(^◇^*)/ All updated in our exercises library as below:", color: :green)
+    @prompt.say("Custom Exercise Name: #{@selected_custom_exercise.name}")
+    @prompt.say("Description: #{@selected_custom_exercise.description}")
+    @prompt.say("Duration: #{@selected_custom_exercise.duration} mins")
   end
 
   def delete_my_custom_exercise
     @selected_custom_exercise.destroy
-    @prompt.say("The exercise has been deleted from the database ┐(‘～`；)┌\n")
+    @prompt.say("The exercise has been deleted from the library ┐(‘～`；)┌\n")
   end
 
   def delete_things_menu

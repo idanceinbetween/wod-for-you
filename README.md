@@ -10,9 +10,12 @@ We have been in the same place, and have designed Flatiron WOD to overcome this 
 
 ## Functionalities of the app:
 - Users can random WODs (Workout of the Day), based on how long they want to work out.
+- Users can know the equivalent of lines of codes they would have written with their WOD, or how much calories it would burn.
 - Users can select their favourite exercises from an exercises library and create their own WOD.
 - Users can add their own custom exercises to the exercises library. Edit and delete functions are then also available.
 - When ready to workout, exercises will be voice narrated so that users can closely follow instructions without looking at the screen.
+- If users insist on looking at the screen, pretty ASCII animations are also available.
+- As it has been scientifically proven that aspiring coders are the ones who need meditation the most, it is incorporated automatically into all WODs.
 - Users can input a postcode anywhere in the world and find the nearest gyms in the vicinity.
 - Users can delete their own account and all associated information from the app's database, a special feature that adheres to the latest GDPR regulations.
 
