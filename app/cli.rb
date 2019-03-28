@@ -11,30 +11,34 @@ class CLI
 
  def welcome
    puts @pastel.blue(@font.write("Flatiron - WOD",letter_spacing: 2))
-   puts "\n \n"
+   2.times {line_break}
    puts @pastel.green.bold'                             ᕦ╏ ʘ̆ ‸ ʘ̆ ╏ᕤ'
-   puts ""
+   line_break
    puts @pastel.red.bold"                            ASPIRING CODER\n"
    puts @pastel.red.bold'          Need to focus on your code craft, but still want to keep working out?'
    puts @pastel.red'               Flatiron Workout of the Day app will:'
    puts @pastel.red'               * suggest a routine that suits your busy schedule'
    puts @pastel.red'               * discover exciting exercises you never knew existed'
    puts @pastel.red'               * sharpen your mind for coding whilst you workout'
-   puts ""
+   line_break
    puts @pastel.red.bold'                       ARE YOU READY TO GET MOVING?'
-   puts ""
+   line_break
    puts @pastel.green.bold'                            ᕙ( * •̀ ᗜ •́ * )ᕗ'
-   puts "\n \n"
+   2.times {line_break}
  end
 
  def logo
    puts @pastel.blue(@font.write("Flatiron - WOD",letter_spacing: 2))
    puts @pastel.blue"٩◔‿◔۶ Logged in as: #{@user.name}"
-   puts "\n \n"
+   2.times {line_break}
  end
 
- def reset
+ def reset #clears screen
    system("clear")
+ end
+
+ def line_break #for formatting
+   puts ""
  end
 
   def start
@@ -152,16 +156,20 @@ class CLI
     end
   end
 
+  def my_wod
+    @my_wod = User.find_by(name: @name).exercises
+  end
+
   def view_wod
    logo
    puts "Reviewing Your WOD (#{@duration} mins)".center(200)
-   puts ""
+   line_break
    puts "==============================================================".center(200)
-   User.find_by(name: @name).exercises.each_with_index do |o,i|
-     puts ""
+   my_wod.each_with_index do |o,i|
+     line_break
      puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
      puts "#{o.description}".center(200)
-     puts ""
+     line_break
      puts "==============================================================".center(200)
    end
 end
@@ -241,7 +249,6 @@ end
     case answer
     when 1
       run_wod
-      back_to_main_menu
     when 2
       @prompt.say("Fine, come back when you're ready!", color: :green)
       back_to_your_workout_menu
@@ -261,8 +268,8 @@ end
       hash[key] = o.id
     end
     @prompt.say("Pick your exercises to be saved in your WOD (>'o')>")
-    @my_wod = @prompt.multi_select("You are now responsible for your own workout duration!", hash)
-    @my_wod.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
+    selected = @prompt.multi_select("You are now responsible for your own workout duration!", hash)
+    @my_wod = selected.each {|i| Routine.create(user_id: @user.id, exercise_id: i)}
     @duration = @user.exercises.sum(:duration)
     reset
     view_wod
@@ -318,13 +325,13 @@ end
     reset
     logo
     puts "Reviewing Exercises Database".center(200)
-    puts ""
+    line_break
     puts "==============================================================".center(200)
     Exercise.all.each_with_index do |o,i|
-      puts ""
+      line_break
       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
       puts "#{o.description}".center(200)
-      puts ""
+      line_break
       puts "==============================================================".center(200)
     end
     back_to_exercises_menu
@@ -359,13 +366,13 @@ end
     reset
     logo
     puts "Reviewing All Your Custom Exercises".center(200)
-    puts ""
+    line_break
     puts "==============================================================".center(200)
     @my_exercises.each_with_index do |o,i|
-      puts ""
+      line_break
       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
       puts "#{o.description}".center(200)
-      puts ""
+      line_break
       puts "==============================================================".center(200)
     end
     back_to_exercises_menu
@@ -507,6 +514,13 @@ end
 
   def run_wod
     reset
+    run_wod_welcome
+    run_wod_loop_with_breaks
+    run_wod_ending
+    back_to_main_menu
+  end
+
+  def run_wod_welcome
     puts <<-'EOF'
                                                  _                                   _
                                                _| |                                 | |_
@@ -522,8 +536,8 @@ end
                                                          |   /_.\____/._\   |
                                                           \   ||      ||   /
                                                            \  | '-..-' |  /
-                                                           |  ; GOLD'S ;  |
-                                                           | /          \ |
+                                                           |  ;FLATIRON;  |
+                                                           | / CHAMPION \ |
                                                             \            /
                                                              |          |
                                                              |    __    |
@@ -542,57 +556,65 @@ end
                                                       /      `|         |    _`\
                                                       `""""`""           ""`"""`
   EOF
-   `say -v Amelie "Are you ready #{@user.name}"`
+   `say -v Amelie "Are you ready #{@user.name}?"`
    sleep(1)
-   User.find_by(name: @name).exercises.each_with_index do |o,i|
-     reset
-     20.times {puts ""}
-       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
-       puts "#{o.description}".center(200)
-       `say -v Samantha "Exercise #{i+1} #{o.name} for #{o.duration} minutes where you #{o.description}"`
-       sleep(1)
-       `say -v Samantha "Starting in 5 4 3 2 1"`
-       pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
-       puts ""
-       puts ""
-       puts ""
+  end
 
-        5.times do
-          i = 1
-          while i < 5
-            print "\033[2J"
-            File.foreach(File.expand_path("../../lib/animations/workout/#{i}.rb", __FILE__)){ |f| puts f }
-            sleep(0.5)
-            i += 1
-          end
-        end
+  def run_wod_loop_with_breaks
+    my_wod.each_with_index do |o,i|
+      reset
 
-        pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
-        sleep(3)
-        reset
-       puts ""
-       `say -v Samantha "Break time meditate with Julia for 30 seconds"`
+      20.times {line_break}
+      puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+      puts "#{o.description}".center(200)
+      `say -v Samantha "Exercise #{i+1}. #{o.name} for #{o.duration} minutes, where you #{o.description}"`
 
-       meditation
-       sleep(5)
+      voice_countdown
+      play_whistle
+      workout_animation
+      meditation
+      play_whistle
+      sleep(3)
+   end
+  end
 
-       pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
-       sleep(3)
-    end
-    puts ""
-    `say -v Samantha "All done. You are the champion!"`
+  def voice_countdown
+    `say -v Samantha "Starting in 5"`
+    `say -v Samantha "4"`
+    `say -v Samantha "3"`
+    `say -v Samantha "2"`
+    `say -v Samantha "1"`
+  end
+
+  def play_whistle
+    pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
+  end
+
+  def workout_animation
+     i = 1
+     while i < 40 #this runs through the entire animation once, don't touch.
+       print "\033[2J"
+       File.foreach(File.expand_path("../../lib/animations/workout/#{i}.rb", __FILE__)){ |f| puts f }
+       sleep(0.1)
+       i += 1
+     end
   end
 
   def meditation
-    10.times do
+    `say -v Samantha "Break time. Meditate with Julia for 30 seconds."`
+    2.times do
       i = 1
-      while i < 20
+      while i < 20 #this runs through the entire animation once, don't touch.
         print "\033[2J"
         File.foreach(File.expand_path("../../lib/animations/meditation/#{i}.rb", __FILE__)){ |f| puts f }
-        sleep(0.3)
+        sleep(0.1)
         i += 1
       end
     end
+  end
+
+  def run_wod_ending
+    `say -v Amelie "All done. You are the champion!"`
   end
 
 end
