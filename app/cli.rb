@@ -573,8 +573,7 @@ end
        puts ""
        `say -v Samantha "Break time meditate with Julia for 30 seconds"`
 
-       puts "meditation animation goes here".center(200)
-       puts "play meditation music if possible".center(200)
+       meditation
        sleep(5)
 
        pid = fork{ exec 'afplay', File.expand_path("../../lib/media/goat_scream.mp3", __FILE__) }
@@ -582,6 +581,18 @@ end
     end
     puts ""
     `say -v Samantha "All done. You are the champion!"`
+  end
+
+  def meditation
+    10.times do
+      i = 1
+      while i < 20
+        print "\033[2J"
+        File.foreach(File.expand_path("../../lib/animations/meditation/#{i}.rb", __FILE__)){ |f| puts f }
+        sleep(0.3)
+        i += 1
+      end
+    end
   end
 
 end
