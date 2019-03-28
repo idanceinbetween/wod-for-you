@@ -10,7 +10,7 @@ User.create([
     {name: "Captain Marvel", duration: 5}
 ])
 Exercise.create([
-    {name: "Be a Drogon", description: "Breathe in fire. Breathe out fire", duration: 1, user_id: 1},
+    {name: "Be a Drogon", description: "Breathe in fire. Breathe out fire.", duration: 1, user_id: 1},
     {name: "Pry", description: "Stand and sigh", duration: 1, user_id: 1},
     {name: "Git Push Pry", description: "Keep doing pushups until you PRY", duration: 3, user_id: 1},
     {name: "One Handed Pry Pull Ups", description: "Debug code while doing one handed pullups", duration: 5, user_id: 1},

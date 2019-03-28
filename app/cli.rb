@@ -514,69 +514,63 @@ end
 
   def run_wod
     reset
-    run_wod_welcome
+    # run_wod_welcome
     run_wod_loop_with_breaks
     run_wod_ending
     back_to_main_menu
   end
 
   def run_wod_welcome
-    puts <<-'EOF'
-                                                 _                                   _
-                                               _| |                                 | |_
-                                              | | |______OOOOo__________oOOOO_______| | |
-                                             [| | |--------(`,----------\`,---------| | |]
-                                              |_| |      )  (            )  (       | |_|
-                                                |_|      /  |            |  \       |_|
-                                                         |  |  \\\\\\//  |  |
-                                                         \  /  | -  - |  \  /
-                                                         /  \ (  a  a  ) /  \
-                                                         |   | |  L   | |   |
-                                                         |   | \  ==  / |   |
-                                                         |   /_.\____/._\   |
-                                                          \   ||      ||   /
-                                                           \  | '-..-' |  /
-                                                           |  ;FLATIRON;  |
-                                                           | / CHAMPION \ |
-                                                            \            /
-                                                             |          |
-                                                             |    __    |
-                                                             |===[LI]===|
-                                                             )"""`""`"""(
-                                                            /            \
-                                                           /    ,____,    \
-                                                          /'-. _.'  '._ .-'\
-                                                         /     /      \     \
-                                                         |    /        \    |
-                                                         (  _/          \_  )
-                                                          |  `\        /`  |
-                                                          |___|        |___|
-                                                          |===/        \===|
-                                                        _/\._(          )_./\_
-                                                      /      `|         |    _`\
-                                                      `""""`""           ""`"""`
-  EOF
-   `say -v Amelie "Are you ready #{@user.name}?"`
+    print "\033[2J" #print static_workout animation
+    File.foreach(File.expand_path("../../lib/animations/static_workout/1.rb", __FILE__)){ |f| puts f }
+    `say -v Amelie "Are you ready #{@user.name}?"`
    sleep(1)
   end
+
+  #sh: -c: line 0: unexpected EOF while looking for matching `"'
+  #sh: -c: line 1: syntax error: unexpected end of file
 
   def run_wod_loop_with_breaks
     my_wod.each_with_index do |o,i|
       reset
-
       20.times {line_break}
       puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
       puts "#{o.description}".center(200)
       `say -v Samantha "Exercise #{i+1}. #{o.name} for #{o.duration} minutes, where you #{o.description}"`
-
-      voice_countdown
-      play_whistle
-      workout_animation
+      # voice_countdown
+      # play_whistle
+      # workout_animation
       meditation
+      stop_it
+      break if @stop_answer.length > 0
       play_whistle
       sleep(3)
-   end
+    end
   end
+
+  def stop_it
+    @stop_answer = @prompt.keypress("Want to give up now? Press any key in the next 3 seconds!", timeout: 3)
+    @stop_answer = @stop_answer.to_s
+  end
+
+  # Working code
+  # def run_wod_loop_with_breaks
+  #   my_wod.each_with_index do |o,i|
+  #     reset
+  #
+  #     20.times {line_break}
+  #     puts "#{i+1}. #{o.name} (#{o.duration} mins)".center(200)
+  #     puts "#{o.description}".center(200)
+  #     `say -v Samantha "Exercise #{i+1}. #{o.name} for #{o.duration} minutes, where you #{o.description}"`
+  #
+  #     voice_countdown
+  #     play_whistle
+  #     workout_animation
+  #     meditation
+  #     play_whistle
+  #     sleep(3)
+  #  end
+  # end
 
   def voice_countdown
     `say -v Samantha "Starting in 5"`
@@ -614,7 +608,11 @@ end
   end
 
   def run_wod_ending
-    `say -v Amelie "All done. You are the champion!"`
+    if @stop_answer.length > 0
+      `say -v Samantha "Pry harder next time, but all done for now!`
+    else
+      `say -v Samantha "All done. You are the champion!"`
+    end
   end
 
 end
