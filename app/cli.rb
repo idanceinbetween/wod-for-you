@@ -51,7 +51,7 @@ class CLI
   end
 
   def get_name
-    @name = @prompt.ask("What is your first name?") do |q|
+    @name = @prompt.ask("What is your name? (Profanity not advised, you might regret it.)") do |q|
         q.required true
     end
     @name = @name.split.map(&:capitalize).join(" ")
@@ -62,6 +62,7 @@ class CLI
       @user = User.find_by(name: @name)
       @duration = @user.exercises.sum(:duration)
       puts @pastel.blue"Welcome back #{@name}. Have a great workout today!"
+      `say -v Samantha "Welcome back #{@name}. Have a great workout today!"`
       spinner = TTY::Spinner.new("[:spinner] Loading app...", format: :pulse_2)
       spinner.auto_spin
       sleep(1)
@@ -70,9 +71,10 @@ class CLI
       @user = User.create(name: @name, duration: 0)
       @duration = @user.exercises.sum(:duration)
       puts @pastel.blue"Hey, #{@name}, it's your first time here, welcome! Hope you enjoy our app!"
+      `say -v Samantha "Hey, #{@name}, it's your first time here, welcome! Hope you enjoy our app!"`
       spinner = TTY::Spinner.new("[:spinner] Loading app...", format: :pulse_2)
       spinner.auto_spin
-      sleep(2)
+      sleep(1)
       spinner.stop("Let's go!")
     end
   end
@@ -83,28 +85,31 @@ class CLI
     puts @pastel.blue.bold"Current Page: Main Menu"
     answer = @prompt.select("What would you like to do today?") do |menu|
       menu.enum '.'
-      menu.choice "Personalise my workout routine",1
-      menu.choice "Exercises library",2
-      menu.choice "Find a nearby gym",3
-      menu.choice "Delete my things",4
-      menu.choice "Exit",5
+      menu.choice "Workout now ᕙ( * •̀ ᗜ •́ * )ᕗ",1
+      menu.choice "Customise workout",2
+      menu.choice "Exercises library",3
+      menu.choice "Find a nearby gym",4
+      menu.choice "Delete my things",5
       menu.choice "Change user",6
+      menu.choice "Exit",7
     end
 
     case answer
       when 1
-        your_workout_menu
+        last_wod
       when 2
-        exercises_menu
+        your_workout_menu
       when 3
+        exercises_menu
+      when 4
         find_gym
         back_to_main_menu
-      when 4
-        delete_things_menu
       when 5
-        exit
+        delete_things_menu
       when 6
         change_user
+      when 7
+        exit
     end
   end
 
@@ -605,7 +610,7 @@ class CLI
  end
 
   def meditation
-    `say -v Samantha "Break time. Meditate with Julia for 30 seconds."`
+    `say -v Samantha "Break time. Meditate for 30 seconds."`
     play_meditation_music
     2.times do
       i = 1
