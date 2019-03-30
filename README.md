@@ -39,7 +39,7 @@ Then off you go!
 
 ## Authors and acknowledgment
 The authors are George Wong and JiaXuan Hon from Inglorious Bashterds of Flatiron School in London.
-This app was built specifically as a project for Module 1 at Flatiron School. We acknowledge the help of all Technical Coaches at Flatiron School - Nico, Guy and Vasile, and the entire Inglorious Bashterds (London, 2019).
+This app was built specifically as a project for Module 1 at Flatiron School within 4 days. We acknowledge the help of all Technical Coaches at Flatiron School especially Nico and Guy, and the entire Inglorious Bashterds (London, 2019).
 
 ## Support
 You could find the authors at george.wong@flatironschool.com or jiaxuan.hon@flatironschool.com.
